@@ -1,3 +1,0 @@
-# apt.txt
-chromium-browser
-chromium-chromedriver
