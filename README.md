@@ -2,7 +2,7 @@
 
 # Sentiment Analysis Project
 
-Welcome to the Sentiment Analysis Project! This repository contains scripts and data for performing sentiment analysis on tweets related to Bitcoin. Below you'll find a detailed description of the project structure, its components, and how to use them.
+Welcome to the Sentiment Analysis Project! This repository contains scripts and data for performing sentiment analysis on tweets related to Cryptocurrencies on X (Formerly Twitter) . Below you'll find a detailed description of the project structure, its components, and how to use them.
 
 ## Project Structure
 
@@ -12,11 +12,10 @@ The project is organized as follows:
 Sentiment Analysis Project
 │
 ├── CSV Files
-│   ├── Bitcoin_tweets.csv
 │   ├── cleaned_tweets.csv
 │   ├── training_dataset.csv
 │   ├── testing_dataset.csv
-│   └── new_dataset_with_predictions.csv
+│   └── extracted_tweets.csv
 │
 ├── label_tweets.py
 ├── dataset_splitter.py
