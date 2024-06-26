@@ -1,6 +1,4 @@
-Sure! Here's a comprehensive README file for your "Sentiment Analysis Project" repository on GitHub.
 
----
 
 # Sentiment Analysis Project
 
