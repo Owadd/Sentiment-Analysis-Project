@@ -13,15 +13,19 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
+import matplotlib.pyplot as plt
 
 
 # Function to clean tweets
 def clean_tweet(text):
+    if text is None:
+        return ""
     text = text.lower()
     text = re.sub(r"#\w+", "", text)
     text = re.sub(r"@\w+", "", text)
     text = re.sub(r"http\S+", "", text)
     text = re.sub(r"[^\w\s]", "", text)
+    text = " ".join(text.split())
     return text
 
 
