@@ -14,6 +14,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 
+
 # Function to clean tweets
 def clean_tweet(text):
     text = text.lower()
@@ -23,6 +24,7 @@ def clean_tweet(text):
     text = re.sub(r"[^\w\s]", "", text)
     text = " ".join(text.split())
     return text
+
 
 # Function to scrape tweets
 def scrape_tweets(search_term, max_tweets):
@@ -73,6 +75,7 @@ def scrape_tweets(search_term, max_tweets):
 
     return text_data
 
+
 # Streamlit app
 def main():
     st.title("Twitter Sentiment Analysis")
@@ -86,6 +89,8 @@ def main():
     if scrape_button:
         with st.spinner("Scraping tweets..."):
             tweet_data = scrape_tweets(search_term, max_tweets)
+            # Filter out None values
+            tweet_data = [tweet for tweet in tweet_data if tweet]
         st.success(f"Scraped {len(tweet_data)} tweets!")
         df = pd.DataFrame(tweet_data, columns=["Text"])
         df.to_csv("scraped_tweets.csv", index=False)
@@ -95,13 +100,13 @@ def main():
     st.header("Load and Clean Tweets")
     if st.button("Load and Clean Tweets"):
         df = pd.read_csv('scraped_tweets.csv')
-        
+
         # Drop rows where 'Text' is NaN
         df.dropna(subset=['Text'], inplace=True)
-        
+
         # Apply cleaning function
         df['Text'] = df['Text'].apply(lambda x: clean_tweet(x) if isinstance(x, str) else "")
-        
+
         st.success("Tweets loaded and cleaned!")
         st.dataframe(df)
 
@@ -109,23 +114,23 @@ def main():
     st.header("Perform Sentiment Analysis")
     if st.button("Perform Sentiment Analysis"):
         df = pd.read_csv('scraped_tweets.csv')
-        
+
         # Drop rows where 'Text' is NaN
         df.dropna(subset=['Text'], inplace=True)
-        
+
         st.text("Loading saved vectorizer and SVM classifier...")
         vectorizer = joblib.load('vectorizer.pkl')
         svm_classifier = joblib.load('svm_classifier.pkl')
-        
+
         st.text("Vectorizing new data...")
         X_new = df['Text'].tolist()
         X_new_vec = vectorizer.transform(tqdm(X_new, desc="Vectorizing"))
-        
+
         st.text("Predicting sentiment...")
         y_pred = svm_classifier.predict(X_new_vec)
         df['Predicted Sentiment'] = y_pred
         df.to_csv('new_dataset_with_predictions.csv', index=False)
-        
+
         st.success("Sentiment analysis complete and predictions saved!")
         st.dataframe(df)
 
@@ -142,8 +147,10 @@ def main():
         st.success(f"Sentiment Score: {sentiment_score:.2f}")
 
         df['Text Length'] = df['Text'].apply(len)
-        top_positive_tweets = df[df['Predicted Sentiment'] == 'positive'].sort_values(by='Text Length', ascending=False).head(3)
-        top_negative_tweets = df[df['Predicted Sentiment'] == 'negative'].sort_values(by='Text Length', ascending=False).head(3)
+        top_positive_tweets = df[df['Predicted Sentiment'] == 'positive'].sort_values(by='Text Length',
+                                                                                      ascending=False).head(3)
+        top_negative_tweets = df[df['Predicted Sentiment'] == 'negative'].sort_values(by='Text Length',
+                                                                                      ascending=False).head(3)
 
         st.subheader("Top Positive Tweets")
         for tweet in top_positive_tweets['Text']:
@@ -166,6 +173,7 @@ def main():
         ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
         ax.set_title('Sentiment Analysis Results')
         st.pyplot(fig)
+
 
 if __name__ == '__main__':
     main()
