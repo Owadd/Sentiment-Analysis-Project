@@ -13,13 +13,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
-import matplotlib.pyplot as plt
 
 
 # Function to clean tweets
 def clean_tweet(text):
-    if text is None:
-        return ""
     text = text.lower()
     text = re.sub(r"#\w+", "", text)
     text = re.sub(r"@\w+", "", text)
@@ -45,7 +42,6 @@ def scrape_tweets(search_term, max_tweets):
     tweet_ids = set()
 
     options = webdriver.ChromeOptions()
-    options.binary_location = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     driver.get(web)
     driver.maximize_window()
