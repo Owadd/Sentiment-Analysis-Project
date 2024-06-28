@@ -89,8 +89,6 @@ def main():
     if scrape_button:
         with st.spinner("Scraping tweets..."):
             tweet_data = scrape_tweets(search_term, max_tweets)
-            # Filter out None values
-            tweet_data = [tweet for tweet in tweet_data if tweet]
         st.success(f"Scraped {len(tweet_data)} tweets!")
         df = pd.DataFrame(tweet_data, columns=["Text"])
         df.to_csv("scraped_tweets.csv", index=False)
