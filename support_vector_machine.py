@@ -10,7 +10,7 @@ import time
 try:
     # Load the dataset
     print("Loading dataset...")
-    df = pd.read_csv('../CSV Files/training_dataset.csv')
+    df = pd.read_csv('./CSV Files/training_dataset.csv')
 
     # Drop rows with missing values in the 'Cleaned tweets' column
     print("Removing missing values...")

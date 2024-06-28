@@ -13,7 +13,7 @@ def log_progress(message):
 try:
     # Load the dataset
     log_progress("Loading dataset...")
-    df = pd.read_csv('../CSV Files/training_dataset.csv')
+    df = pd.read_csv('./CSV Files/training_dataset.csv')
 
     # Drop rows with missing values in the 'Cleaned tweets' column
     log_progress("Dropping rows with missing values...")
