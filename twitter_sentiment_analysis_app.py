@@ -45,6 +45,7 @@ def scrape_tweets(search_term, max_tweets):
     tweet_ids = set()
 
     options = webdriver.ChromeOptions()
+    options.binary_location = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     driver.get(web)
     driver.maximize_window()
