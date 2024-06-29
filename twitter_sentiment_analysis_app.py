@@ -12,8 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-from webdriver_manager.chrome import ChromeDriverManager
-
+import matplotlib.pyplot as plt
 
 # Function to clean tweets
 def clean_tweet(text):
@@ -24,7 +23,6 @@ def clean_tweet(text):
     text = re.sub(r"[^\w\s]", "", text)
     text = " ".join(text.split())
     return text
-
 
 # Function to scrape tweets
 def scrape_tweets(search_term, max_tweets):
@@ -42,7 +40,7 @@ def scrape_tweets(search_term, max_tweets):
     tweet_ids = set()
 
     options = webdriver.ChromeOptions()
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    driver = webdriver.Chrome(service=ChromeService(executable_path="./chromedriver-win64/chromedriver-win64/chromedriver.exe"), options=options)
     driver.get(web)
     driver.maximize_window()
 
@@ -75,7 +73,6 @@ def scrape_tweets(search_term, max_tweets):
 
     return text_data
 
-
 # Streamlit app
 def main():
     st.title("Twitter Sentiment Analysis")
@@ -89,10 +86,13 @@ def main():
     if scrape_button:
         with st.spinner("Scraping tweets..."):
             tweet_data = scrape_tweets(search_term, max_tweets)
-        st.success(f"Scraped {len(tweet_data)} tweets!")
-        df = pd.DataFrame(tweet_data, columns=["Text"])
-        df.to_csv("scraped_tweets.csv", index=False)
-        st.dataframe(df)
+        if tweet_data is not None:
+            st.success(f"Scraped {len(tweet_data)} tweets!")
+            df = pd.DataFrame(tweet_data, columns=["Text"])
+            df.to_csv("scraped_tweets.csv", index=False)
+            st.dataframe(df)
+        else:
+            st.error("Failed to scrape tweets.")
 
     # Step 2: Load and clean tweets from CSV
     st.header("Load and Clean Tweets")
@@ -171,7 +171,6 @@ def main():
         ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
         ax.set_title('Sentiment Analysis Results')
         st.pyplot(fig)
-
 
 if __name__ == '__main__':
     main()
