@@ -24,6 +24,8 @@ import matplotlib.pyplot as plt
 
 # Function to clean tweets
 def clean_tweet(text):
+    if text is None:
+        return ""
     text = text.lower()
     text = re.sub(r"#\w+", "", text)
     text = re.sub(r"@\w+", "", text)
