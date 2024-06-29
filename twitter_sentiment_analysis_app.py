@@ -1,3 +1,10 @@
+import os
+import subprocess
+
+# Run the setup.sh script to set permissions for chromedriver
+subprocess.call(['chmod', '+x', './chromedriver-win64/chromedriver-win64/chromedriver.exe'])
+
+#imports
 import re
 import time
 import csv
@@ -12,6 +19,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from webdriver_manager.chrome import ChromeDriverManager
 import matplotlib.pyplot as plt
 
 # Function to clean tweets
@@ -40,7 +48,7 @@ def scrape_tweets(search_term, max_tweets):
     tweet_ids = set()
 
     options = webdriver.ChromeOptions()
-    driver = webdriver.Chrome(service=ChromeService(executable_path="./chromedriver-win64/chromedriver-win64/chromedriver.exe"), options=options)
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     driver.get(web)
     driver.maximize_window()
 
