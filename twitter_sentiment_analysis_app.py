@@ -4,23 +4,21 @@ import subprocess
 # Run the setup.sh script to set permissions for chromedriver
 subprocess.call(['chmod', '+x', './chromedriver-win64/chromedriver-win64/chromedriver.exe'])
 
-#imports
+# Imports
 import re
+import logging
 import time
 import csv
-import joblib
 import pandas as pd
-import numpy as np
-from tqdm import tqdm
-import streamlit as st
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
-import matplotlib.pyplot as plt
+import streamlit as st
 
 # Function to clean tweets
 def clean_tweet(text):
@@ -49,16 +47,18 @@ def scrape_tweets(search_term, max_tweets):
     text_data = []
     tweet_ids = set()
 
-    options = webdriver.ChromeOptions()
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     driver.get(web)
-    driver.maximize_window()
 
     scrolling = True
     total_tweets_collected = 0
     while scrolling and total_tweets_collected < max_tweets:
         try:
-            tweets = WebDriverWait(driver, 210).until(EC.presence_of_all_elements_located((By.XPATH, "//article")))
+            tweets = WebDriverWait(driver, 30).until(EC.presence_of_all_elements_located((By.XPATH, "//article")))
             for tweet in tweets:
                 tweet_data = get_tweet_data(tweet)
                 if tweet_data:
@@ -78,9 +78,13 @@ def scrape_tweets(search_term, max_tweets):
         except TimeoutException:
             print("Timeout waiting for elements. Stopping scraping.")
             scrolling = False
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            scrolling = False
 
     driver.quit()
 
+    print(f"Scraped {len(text_data)} tweets")
     return text_data
 
 # Streamlit app
@@ -99,7 +103,6 @@ def main():
         if tweet_data is not None:
             st.success(f"Scraped {len(tweet_data)} tweets!")
             df = pd.DataFrame(tweet_data, columns=["Text"])
-            df.to_csv("scraped_tweets.csv", index=False)
             st.dataframe(df)
         else:
             st.error("Failed to scrape tweets.")
@@ -107,80 +110,10 @@ def main():
     # Step 2: Load and clean tweets from CSV
     st.header("Load and Clean Tweets")
     if st.button("Load and Clean Tweets"):
-        df = pd.read_csv('scraped_tweets.csv')
-
-        # Drop rows where 'Text' is NaN
-        df.dropna(subset=['Text'], inplace=True)
-
-        # Apply cleaning function
-        df['Text'] = df['Text'].apply(lambda x: clean_tweet(x) if isinstance(x, str) else "")
-
+        df = pd.DataFrame(tweet_data, columns=["Text"])
+        df['Text'] = df['Text'].apply(clean_tweet)
         st.success("Tweets loaded and cleaned!")
         st.dataframe(df)
-
-    # Step 3: Perform sentiment analysis
-    st.header("Perform Sentiment Analysis")
-    if st.button("Perform Sentiment Analysis"):
-        df = pd.read_csv('scraped_tweets.csv')
-
-        # Drop rows where 'Text' is NaN
-        df.dropna(subset=['Text'], inplace=True)
-
-        st.text("Loading saved vectorizer and SVM classifier...")
-        vectorizer = joblib.load('vectorizer.pkl')
-        svm_classifier = joblib.load('svm_classifier.pkl')
-
-        st.text("Vectorizing new data...")
-        X_new = df['Text'].tolist()
-        X_new_vec = vectorizer.transform(tqdm(X_new, desc="Vectorizing"))
-
-        st.text("Predicting sentiment...")
-        y_pred = svm_classifier.predict(X_new_vec)
-        df['Predicted Sentiment'] = y_pred
-        df.to_csv('new_dataset_with_predictions.csv', index=False)
-
-        st.success("Sentiment analysis complete and predictions saved!")
-        st.dataframe(df)
-
-    # Step 4: Generate sentiment score and summaries
-    st.header("Sentiment Score and Summaries")
-    if st.button("Generate Sentiment Score and Summaries"):
-        df = pd.read_csv('new_dataset_with_predictions.csv')
-        sentiment_counts = df['Predicted Sentiment'].value_counts()
-        positive_count = sentiment_counts.get('positive', 0)
-        negative_count = sentiment_counts.get('negative', 0)
-        total_count = positive_count + negative_count
-        sentiment_score = (positive_count - negative_count) / total_count if total_count > 0 else 0
-
-        st.success(f"Sentiment Score: {sentiment_score:.2f}")
-
-        df['Text Length'] = df['Text'].apply(len)
-        top_positive_tweets = df[df['Predicted Sentiment'] == 'positive'].sort_values(by='Text Length',
-                                                                                      ascending=False).head(3)
-        top_negative_tweets = df[df['Predicted Sentiment'] == 'negative'].sort_values(by='Text Length',
-                                                                                      ascending=False).head(3)
-
-        st.subheader("Top Positive Tweets")
-        for tweet in top_positive_tweets['Text']:
-            st.write(f"- {tweet}")
-
-        st.subheader("Top Negative Tweets")
-        for tweet in top_negative_tweets['Text']:
-            st.write(f"- {tweet}")
-
-        # Step 5: Generate pie chart
-        st.subheader("Sentiment Analysis Results")
-        labels = ['Positive', 'Negative']
-        sizes = [positive_count, negative_count]
-        colors = ['#1f77b4', '#ff7f0e']
-        explode = (0.1, 0)  # explode the 1st slice (i.e. 'Positive')
-
-        fig, ax = plt.subplots(figsize=(8, 8))
-        ax.pie(sizes, explode=explode, labels=labels, colors=colors,
-               autopct='%1.1f%%', shadow=True, startangle=140)
-        ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-        ax.set_title('Sentiment Analysis Results')
-        st.pyplot(fig)
 
 if __name__ == '__main__':
     main()
