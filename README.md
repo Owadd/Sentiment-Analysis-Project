@@ -30,7 +30,6 @@ Sentiment Analysis Project
 
 ### CSV Files
 
-- **Bitcoin_tweets.csv**: Raw dataset containing tweets about Bitcoin.
 - **cleaned_tweets.csv**: Cleaned dataset with additional sentiment analysis columns.
 - **training_dataset.csv**: Training dataset for machine learning models.
 - **testing_dataset.csv**: Testing dataset for evaluating model performance.
